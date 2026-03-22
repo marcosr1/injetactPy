@@ -4,6 +4,16 @@ from config import DB_URL, TABLE_NAME
 
 def load_data():
     engine = create_engine(DB_URL)
-    query = f"SELECT * FROM {TABLE_NAME}"
+    query = '''
+        SELECT 
+            o.id,
+            o."createdAt",
+            o.total,
+            oi."nomeProduto",
+            oi.quantidade,
+            oi."precoUnitario"
+        FROM "orders" o
+        JOIN "orderItems" oi ON oi."orderId" = o.id
+    '''
     df = pd.read_sql(query, engine)
     return df   

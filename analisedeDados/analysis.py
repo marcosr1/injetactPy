@@ -21,4 +21,12 @@ def analysis(df):
         outliers = df[df['total'] > media + 2 * desvio]
         results['outliers'] = outliers
         
+    if 'nomeProduto' in df.columns:
+        if 'quantidade' in df.columns:
+            produtos = df.groupby('nomeProduto')['quantidade'].sum().sort_values(ascending=False)
+        else:
+            produtos = df['nomeProduto'].value_counts()
+        
+        results['produtos'] = produtos
+        
     return results
