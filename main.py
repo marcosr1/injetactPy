@@ -3,22 +3,33 @@ import random
 import uuid
 from faker import Faker
 from datetime import datetime
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 agora = datetime.now()
 
 fake = Faker('pt_BR')
 
+conn = psycopg2.connect(
+    host=os.getenv("DB_HOST"),
+    database=os.getenv("DB_NAME"),
+    user=os.getenv("DB_USER"),
+    password=os.getenv("DB_PASS"),
+    port=os.getenv("DB_PORT")
+)
 
 cursor = conn.cursor()
 
 status_list = ["PENDING", "PREPARING", "READY", "DELIVERED", "CANCELLED"]
 payment_methods = ["PIX", "CREDIT_CARD", "DEBIT_CARD", "CASH"]
 
-# 🔥 pega todos produtos uma vez só
+
 cursor.execute('SELECT id, nome, preco FROM produtos')
 produtos = cursor.fetchall()
 
-# 🔥 transforma em dict (MUITO mais rápido)
+
 produtos_dict = {
     str(p[0]): {
         "nome": p[1],
@@ -75,7 +86,7 @@ for i in range(quantidade):
         produto = produtos_dict.get(produto_id)
 
         if not produto:
-            continue  # evita erro
+            continue  
 
         nome_prod = produto["nome"]
         preco = produto["preco"]
@@ -97,7 +108,7 @@ for i in range(quantidade):
 
     status = gerar_status(pedido_json["paymentMethod"], total_pedido)
 
-    # 🔥 orders (mantendo aspas pq você criou assim)
+
     cursor.execute("""
         INSERT INTO orders
         ("id", "nomeCliente", "numeroCliente", "observacao", "status", "total", "paymentMethod", "createdAt", "updatedAt")
@@ -114,7 +125,7 @@ for i in range(quantidade):
         agora
     ))
 
-    # 🔥 orderItem (IMPORTANTE: use aspas se criou camelCase)
+
     cursor.executemany("""
         INSERT INTO "orderItems"
         ("id", "orderId", "nomeProduto", "precoUnitario", "quantidade", "subtotal", "createdAt", "updatedAt")
